@@ -21,7 +21,7 @@ class LoginController extends Controller
         ];
 
         $validator = Validator::make($input, $validate_data);
-        
+
         if ($validator->fails()) {
             return response()->json([
                 'success' => false,
@@ -30,22 +30,21 @@ class LoginController extends Controller
             ]);
         }
 
-        // authentication attempt
-        if (auth()->attempt($input)) {
-            $token = auth()->user()->createToken('passport_token')->accessToken->token;
+        if (Auth::attempt($input)) {
+            $user = Auth::user();
+            $token = $user->createToken('passport_token')->accessToken;
+
             return response()->json([
                 'success' => true,
-                'message' => 'User login succesfully, Use token to authenticate.',
-                'token' => $token
+                'message' => 'User login successfully. Use token to authenticate.',
+                'token' => $token,
             ], 200);
         } else {
             return response()->json([
                 'success' => false,
-                'message' => 'User authentication failed.'
-            ], 401);
+                'message' => 'User authentication failed.',
+            ]);
         }
-
-        
     }
 
     public function register(Request $request)
@@ -54,6 +53,7 @@ class LoginController extends Controller
             'name' => 'required',
             'email' => 'required|email|unique:users',
             'password' => 'required|min:6',
+            'confirm_password' => 'required|min:6|same:password',
         ]);
 
         if ($validator->fails()) {
@@ -66,13 +66,8 @@ class LoginController extends Controller
             'password' => bcrypt($request->password),
         ]);
 
-        $token = $user->createToken('MyApp')->accessToken;
+        $token = $user->createToken('passport-token')->accessToken;
 
-        return response()->json(['token' => $token], 200);
-    }
-
-    public function getUserProfile(Request $request){
-        $token = $request->bearerToken();
-        dd($token);
+        return response()->json(['user' => $user], 200);
     }
 }

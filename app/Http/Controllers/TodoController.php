@@ -29,7 +29,13 @@ class TodoController extends Controller
     public function index(Request $request)
     {
         try{
-            $todos = $this->todoRepository->fetchAll($request);
+            // $todos = $this->todoRepository->fetchAll($request);
+            $filter = $request->filter ?? '';
+            $sort_by = $request->sortby ?? "id";
+            $order = $request->order ?? "ASC";
+            $per_page = $request->per_page ?? 10;
+            
+            $todos = $this->todoRepository->fetchAll($per_page, $sort_by, $order, $filter);
             return ResponseHelper::successHandler($todos, "Todos fetched successfully", RESPONSE::HTTP_OK);
         }
         catch(ModelNotFoundException){
@@ -43,18 +49,28 @@ class TodoController extends Controller
     public function store(TodoRequest $request)
     {
         try {
-            DB::beginTransaction();
+            $validator = Validator::make($request->all(), [ 
+                "title"=> "sometimes",
+                "description"=> "sometimes",
+                "status"=> 'in:open,completed','progress',
+                "image" => 'sometimes|mimes:jpeg,png,jpg,gif',
+                "due_date"=> 'date_format:Y-m-d H:i:s'
+            ]);
+
+            if ($validator->fails()) {
+                return ResponseHelper::errorHandling($validator->errors(), RESPONSE::HTTP_UNPROCESSABLE_ENTITY);
+            }
             $data = [
                 'title' => $request->title,
                 'description' => $request->description,
                 'image' => $request->hasFile('image') ? $request->image->store('images/todos') : null,
                 'status' => $request->status,
                 'due_date' => $request->due_date,
+                'user_id' => auth()->id()
             ];
 
             $todo = $this->todoRepository->create($data);
 
-            DB::commit();
 
             return ResponseHelper::successHandler($data, "Todo created successfully", RESPONSE::HTTP_CREATED);
         }
@@ -70,6 +86,9 @@ class TodoController extends Controller
     {
         try{
             $todo = $this->todoRepository->fetch($id);
+            if(!$todo){
+                return ResponseHelper::errorHandling("You are not authorized to View this todo!!", Response::HTTP_FORBIDDEN);
+               }
             return ResponseHelper::successHandler($todo, "todo fetched successfully", RESPONSE::HTTP_OK);
         }
         catch(ModelNotFoundException){
@@ -83,24 +102,27 @@ class TodoController extends Controller
     public function update(Request $request, $id)
     { 
         try {
-            // DB::beginTransaction();
             $validator = Validator::make($request->all(), [ 
                 "title"=> "sometimes",
+                "description"=> "sometimes",
+                "status"=> 'in:open,completed','progress',
+                "image" => 'sometimes|mimes:jpeg,png,jpg,gif',
+                "due_date"=> 'date_format:Y-m-d H:i:s'
             ]);
 
             if ($validator->fails()) {
                 return ResponseHelper::errorHandling($validator->errors(), RESPONSE::HTTP_UNPROCESSABLE_ENTITY);
             }
-            $data = [
-                'title' => $request->title,
-                'description' => $request->description,
-                'image' => $request->hasFile('image') ? $request->image->store('images/todos') : null,
-                'status' => $request->status,
-                'due_date' => $request->due_date,
-            ];
+            if($request->image != null){
+                $request->request->add(['image' => $request->image->store('images/todos')]);
+            }
+            $request->request->add(['user_id' => auth()->id()]);
 
-            $todo = $this->todoRepository->update($data, $id);
-            // DB::commit();  
+
+            $todo = $this->todoRepository->update($request, $id);
+            if(!$todo){
+                return ResponseHelper::errorHandling("You are not authorized to edit this todo!!", Response::HTTP_FORBIDDEN);
+               }
         
         return ResponseHelper::successHandler($todo, "todo updated successfully", RESPONSE::HTTP_OK);
     }
@@ -114,9 +136,11 @@ class TodoController extends Controller
 
     public function destroy($id)
     {
-        dd(auth()->user());
         try{
-            $this->todoRepository->delete($id);
+            $deletedTodo = $this->todoRepository->delete($id);
+           if(!$deletedTodo){
+            return ResponseHelper::errorHandling("You are not authorized to delete!!", Response::HTTP_FORBIDDEN);
+           }
             return ResponseHelper::successHandler($data=[], "Todo deleted successfully", Response::HTTP_OK);
         }
         catch(ModelNotFoundException $modelNotFoundException){
