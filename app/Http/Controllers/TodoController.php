@@ -80,10 +80,17 @@ class TodoController extends Controller
         }
     }
 
-    public function update(TodoRequest $request, $id)
+    public function update(Request $request, $id)
     { 
         try {
-            DB::beginTransaction();
+            // DB::beginTransaction();
+            $validator = Validator::make($request->all(), [ 
+                "title"=> "nullable",
+            ]);
+
+            if ($validator->fails()) {
+                return ResponseHelper::errorHandling($validator->errors(), RESPONSE::HTTP_UNPROCESSABLE_ENTITY);
+            }
             $data = [
                 'title' => $request->title,
                 'description' => $request->description,
@@ -93,7 +100,7 @@ class TodoController extends Controller
             ];
 
             $todo = $this->todoRepository->update($data, $id);
-            DB::commit();  
+            // DB::commit();  
         
         return ResponseHelper::successHandler($todo, "todo updated successfully", RESPONSE::HTTP_OK);
     }

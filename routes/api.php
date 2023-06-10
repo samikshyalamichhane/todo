@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\LoginController;
 use App\Http\Controllers\TodoController;
+use App\Http\Controllers\TodoStatusController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -21,6 +22,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 // Route::group([], function () {
 Route::apiResource('todos', TodoController::class);
+Route::post('/todo-completed/{todo}', [TodoStatusController::class, 'store']);
 Route::post('/login', [LoginController::class, 'login']);
 Route::post('/register', [LoginController::class,'register']);
 // });

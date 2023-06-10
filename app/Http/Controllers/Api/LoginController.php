@@ -32,8 +32,7 @@ class LoginController extends Controller
 
         // authentication attempt
         if (auth()->attempt($input)) {
-            $token = auth()->user()->createToken('passport_token')->accessToken;
-            
+            $token = auth()->user()->createToken('passport_token')->accessToken->token;
             return response()->json([
                 'success' => true,
                 'message' => 'User login succesfully, Use token to authenticate.',
@@ -45,6 +44,8 @@ class LoginController extends Controller
                 'message' => 'User authentication failed.'
             ], 401);
         }
+
+        
     }
 
     public function register(Request $request)

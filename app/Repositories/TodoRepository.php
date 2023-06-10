@@ -26,7 +26,7 @@ class TodoRepository implements TodoInterface{
     public function update($data, int $id): Todo
     {
         $Todo = Todo::findOrFail($id);
-        dd($Todo);
+        dd($data);
         $Todo->update($data);
         return $Todo;
     }

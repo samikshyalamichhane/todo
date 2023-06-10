@@ -18,6 +18,8 @@ return new class extends Migration
             $table->string('image')->nullable();
             $table->enum('status', ['completed', 'open', 'progress'])->default('open');
             $table->timestamp('due_date')->nullable();
+            $table->unsignedBigInteger('user_id')->nullable();
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('SET NULL');
             $table->timestamps();
         });
     }

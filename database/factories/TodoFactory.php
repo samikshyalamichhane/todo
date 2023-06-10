@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -19,7 +20,8 @@ class TodoFactory extends Factory
         return [
             'title' => fake()->name(),
             'description' => fake()->text(),
-            'due_date'=> fake()->date()
+            'due_date'=> fake()->date(),
+            'user_id'=> User::inRandomOrder()->first()->id,
         ];
     }
 }
