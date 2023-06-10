@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Models\Todo;
+use Exception;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Mail;
 
@@ -27,17 +28,23 @@ class TodoReminder extends Command
      */
     public function handle()
     {
-        $todos = Todo::whereDate('due_date', now()->addDay())->get();
+        try{
 
-        foreach ($todos as $todo) {
-            $user = $todo->user;
+            $todos = Todo::whereDate('due_date', now()->addDay())->get();
+    
+            foreach ($todos as $todo) {
+                $user = $todo->user;
+    
+                Mail::send('emails.todo_reminder', ['todo' => $todo], function ($message) use ($user) {
+                    $message->to($user->email)
+                            ->subject('Reminder: Todo Due Tomorrow');
+                });
+            }
+    
+            $this->info('Todo reminders sent successfully.');
+        } catch(Exception $e) {
+            throw new $e;
 
-            Mail::send('emails.todo_reminder', ['todo' => $todo], function ($message) use ($user) {
-                $message->to($user->email)
-                        ->subject('Reminder: Todo Due Tomorrow');
-            });
         }
-
-        $this->info('Todo reminders sent successfully.');
     }
 }

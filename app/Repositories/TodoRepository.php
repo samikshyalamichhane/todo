@@ -8,9 +8,11 @@ use Illuminate\Support\Collection;
 
 class TodoRepository implements TodoInterface{
 
-    public function fetchAll(): Collection
+    public function fetchAll($request): Collection
     {
-        return Todo::get();
+        return Todo::where(function ($query) use ($request) {
+            $query->where('status', $request->status);
+        })->get();
     }
 
     public function fetch(int $id): Todo
@@ -26,7 +28,7 @@ class TodoRepository implements TodoInterface{
     public function update($data, int $id): Todo
     {
         $Todo = Todo::findOrFail($id);
-        dd($data);
+        // dd($data);
         $Todo->update($data);
         return $Todo;
     }

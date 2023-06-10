@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('title')->nullable();
             $table->longText('description')->nullable();
             $table->string('image')->nullable();
-            $table->enum('status', ['completed', 'open', 'progress'])->default('open');
+            $table->enum('status', ['completed', 'open', 'progress'])->default('open')->nullable();
             $table->timestamp('due_date')->nullable();
             $table->unsignedBigInteger('user_id')->nullable();
             $table->foreign('user_id')->references('id')->on('users')->onDelete('SET NULL');

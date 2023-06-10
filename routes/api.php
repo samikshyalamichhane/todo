@@ -17,12 +17,20 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
-});
-// Route::group([], function () {
-Route::apiResource('todos', TodoController::class);
-Route::post('/todo-completed/{todo}', [TodoStatusController::class, 'store']);
+// Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
+//     return $request->user();
+// });
 Route::post('/login', [LoginController::class, 'login']);
 Route::post('/register', [LoginController::class,'register']);
+Route::group([ 'middleware' => ['auth:api']], function () {
+Route::apiResource('todos', TodoController::class);
+Route::post('/todo-completed/{todo}', [TodoStatusController::class, 'store']);
+Route::get('/get-user-profile', [LoginController::class, 'getUserProfile']);
+
+});
+
+// Route::middleware('auth:api')->group( function () {
+//     Route::apiResource('todos', TodoController::class);
+//     Route::post('/todo-completed/{todo}', [TodoStatusController::class, 'store']);
+//     Route::get('/get-user-profile', [LoginController::class, 'getUserProfile']);
 // });

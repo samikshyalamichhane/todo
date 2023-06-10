@@ -26,10 +26,10 @@ class TodoController extends Controller
         $this->todoRepository = $todoRepository;
     }
 
-    public function index()
+    public function index(Request $request)
     {
         try{
-            $todos = $this->todoRepository->fetchAll();
+            $todos = $this->todoRepository->fetchAll($request);
             return ResponseHelper::successHandler($todos, "Todos fetched successfully", RESPONSE::HTTP_OK);
         }
         catch(ModelNotFoundException){
@@ -85,7 +85,7 @@ class TodoController extends Controller
         try {
             // DB::beginTransaction();
             $validator = Validator::make($request->all(), [ 
-                "title"=> "nullable",
+                "title"=> "sometimes",
             ]);
 
             if ($validator->fails()) {
@@ -114,6 +114,7 @@ class TodoController extends Controller
 
     public function destroy($id)
     {
+        dd(auth()->user());
         try{
             $this->todoRepository->delete($id);
             return ResponseHelper::successHandler($data=[], "Todo deleted successfully", Response::HTTP_OK);

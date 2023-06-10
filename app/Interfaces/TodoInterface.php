@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 
 interface TodoInterface{
-    public function fetchAll(): Collection;
+    public function fetchAll($request): Collection;
 
     public function fetch(int $todo):Todo;
 
