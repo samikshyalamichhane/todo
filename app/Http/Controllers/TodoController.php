@@ -54,25 +54,21 @@ class TodoController extends Controller
                 "description"=> "sometimes",
                 "status"=> 'in:open,completed','progress',
                 "image" => 'sometimes|mimes:jpeg,png,jpg,gif',
-                "due_date"=> 'date_format:Y-m-d H:i:s'
+                "due_date"=> 'sometimes|date_format:Y-m-d H:i:s'
             ]);
 
             if ($validator->fails()) {
                 return ResponseHelper::errorHandling($validator->errors(), RESPONSE::HTTP_UNPROCESSABLE_ENTITY);
             }
-            $data = [
-                'title' => $request->title,
-                'description' => $request->description,
-                'image' => $request->hasFile('image') ? $request->image->store('images/todos') : null,
-                'status' => $request->status,
-                'due_date' => $request->due_date,
-                'user_id' => auth()->id()
-            ];
+            if($request->image != null){
+                $request->request->add(['image' => $request->image->store('images/todos')]);
+            }
+            $request->request->add(['user_id' => auth()->id()]);
 
-            $todo = $this->todoRepository->create($data);
+            $todo = $this->todoRepository->create($request->all());
 
 
-            return ResponseHelper::successHandler($data, "Todo created successfully", RESPONSE::HTTP_CREATED);
+            return ResponseHelper::successHandler($todo, "Todo created successfully", RESPONSE::HTTP_CREATED);
         }
         catch(BadMethodCallException $badMethodCallException){
             return ResponseHelper::errorHandling($badMethodCallException->getMessage(), Response::HTTP_BAD_REQUEST);
@@ -107,7 +103,7 @@ class TodoController extends Controller
                 "description"=> "sometimes",
                 "status"=> 'in:open,completed','progress',
                 "image" => 'sometimes|mimes:jpeg,png,jpg,gif',
-                "due_date"=> 'date_format:Y-m-d H:i:s'
+                "due_date"=> 'sometimes|date_format:Y-m-d H:i:s'
             ]);
 
             if ($validator->fails()) {

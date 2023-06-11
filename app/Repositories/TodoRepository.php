@@ -29,9 +29,9 @@ class TodoRepository implements TodoInterface{
         return null;
     }
 
-    public function create($data): Todo
+    public function create($request): Todo
     {
-        return Todo::create($data);
+        return Todo::create($request);
     }
 
     public function update($request, int $id): mixed
